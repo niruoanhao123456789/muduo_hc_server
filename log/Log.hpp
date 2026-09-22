@@ -44,9 +44,9 @@ namespace LogModule
     #define LOGE(fmt, ...) LOG_ERROR(LogModule::RootLogger(), fmt, ##__VA_ARGS__)
     #define LOGF(fmt, ...) LOG_FATAL(LogModule::RootLogger(), fmt, ##__VA_ARGS__)
 
-    #define LOGD_STREAM LOG_DEBUG_STREAM(LogModule::RootLogger())
-    #define LOGI_STREAM LOG_INFOR_STREAM(LogModule::RootLogger())
-    #define LOGW_STREAM LOG_WARNNING_STREAM(LogModule::RootLogger())
-    #define LOGE_STREAM LOG_ERROR_STREAM(LogModule::RootLogger())
-    #define LOGF_STREAM LOG_FATAL_STREAM(LogModule::RootLogger())
+    #define LOGD_STREAM() LOG_DEBUG_STREAM(LogModule::RootLogger())
+    #define LOGI_STREAM() LOG_INFOR_STREAM(LogModule::RootLogger())
+    #define LOGW_STREAM() LOG_WARNNING_STREAM(LogModule::RootLogger())
+    #define LOGE_STREAM() LOG_ERROR_STREAM(LogModule::RootLogger())
+    #define LOGF_STREAM() LOG_FATAL_STREAM(LogModule::RootLogger())
 }

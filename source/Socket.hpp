@@ -1,4 +1,4 @@
-# pragma once
+#pragma  once
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -11,7 +11,7 @@
 
 #include "../log/Log.hpp"
 
-namespace Server_Socket
+namespace server_socket
 {
     using namespace LogModule;
     
@@ -171,7 +171,7 @@ namespace Server_Socket
         }
 
         // 创建一个服务端连接
-        bool CreateServer(const std::string& ip = "0.0.0.0",uint16_t port, bool block_flag = false)
+        bool CreateServer(uint16_t port, const std::string& ip = "0.0.0.0", bool block_flag = false)
         {
             // 1. 创建套接字，2. 绑定地址，3. 开始监听，4. 设置非阻塞， 5. 启动地址重用
             if(!Create())       return false;
@@ -183,7 +183,7 @@ namespace Server_Socket
         }
 
         // 创建一个客户端连接
-        bool CreateClient(uint16_t port,const std::string& ip)
+        bool CreateClient(uint16_t port, const std::string& ip)
         {
             // 1. 创建套接字，2.指向连接服务器
             if(!Create())           return false;

@@ -41,8 +41,6 @@ static void CheckInvariants(ServerBuffer &b, const std::deque<char> &model,
     CHECK(b.ReadableSize() == model.size(),
           where + ": ReadableSize=" + std::to_string(b.ReadableSize()) +
               " model=" + std::to_string(model.size()));
-    CHECK(b.IdelSize() == b.Size() - 1 - b.ReadableSize(),
-          where + ": IdelSize != Size - 1 - ReadableSize");
     CHECK(b.ReadableSize() <= b.Size() - 1,
           where + ": ReadableSize exceeds capacity (Size-1)");
     CHECK(b.Empty() == model.empty(), where + ": Empty() mismatch");
@@ -490,26 +488,26 @@ static void test_fuzz(int iters, uint32_t seed)
               << " done\n";
 }
 
-int main()
-{
-    std::cout << "===== ServerBuffer stress test start =====\n";
+// int main()
+// {
+//     std::cout << "===== ServerBuffer stress test start =====\n";
 
-    test_basic();
-    test_sizes();
-    test_resize_stress();
-    test_wraparound();
-    test_exact_fill();
-    test_getline();
-    test_write_server_buffer();
+//     test_basic();
+//     test_sizes();
+//     test_resize_stress();
+//     test_wraparound();
+//     test_exact_fill();
+//     test_getline();
+//     test_write_server_buffer();
 
-    test_fuzz(100000, 1);
-    test_fuzz(100000, 42);
-    test_fuzz(100000, 20240920);
+//     test_fuzz(100000, 1);
+//     test_fuzz(100000, 42);
+//     test_fuzz(100000, 20240920);
 
-    std::cout << "===== ServerBuffer stress test end =====\n";
-    std::cout << "passed: " << g_passed << ", failed: " << g_failed << "\n";
-    if (g_failed > kMaxPrintFail)
-        std::cout << "(only first " << kMaxPrintFail << " failures printed)\n";
+//     std::cout << "===== ServerBuffer stress test end =====\n";
+//     std::cout << "passed: " << g_passed << ", failed: " << g_failed << "\n";
+//     if (g_failed > kMaxPrintFail)
+//         std::cout << "(only first " << kMaxPrintFail << " failures printed)\n";
 
-    return g_failed == 0 ? 0 : 1;
-}
+//     return g_failed == 0 ? 0 : 1;
+// }

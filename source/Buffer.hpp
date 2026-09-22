@@ -1,4 +1,4 @@
-#pragma once
+#pragma  once
 #include <iostream>
 #include <vector>
 #include <string>
@@ -218,7 +218,7 @@ namespace server_buffer
             }
             _rindex = 0;
             _windex = datelen;
-            LOGI_STREAM <<"ServerBuffer resize: "<<newsize;
+            LOGI_STREAM() <<"ServerBuffer resize: "<<newsize;
         }
 
         void MoveRindex(size_t len)
