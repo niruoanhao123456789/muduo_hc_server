@@ -7,13 +7,19 @@
 #include <functional>
 #include <unistd.h>
 #include <sys/timerfd.h>
+
 #include "Channel.hpp"
+#include "../log/Log.hpp"
+
+namespace server_eventloop { class EventLoop; }
 
 namespace server_timerwheel
 {
+    using namespace LogModule;
     using namespace server_channel;
     using tastfunc_t = std::function<void()>;
     using releasefunc_t = std::function<void()>;
+    using EventLoop = server_eventloop::EventLoop;
     
     class TimerTask
     {
@@ -70,16 +76,26 @@ namespace server_timerwheel
             _timer_channel->EnableRead(); // 启动事件监控
         }
 
-        /* 定时器中有个_timers成员，定时器信息的操作有可能在多线程中进行，因此需要考虑线程安全问题*/
-        /* 如果不想加锁，那就把对定期的所有操作，都放到一个线程中进行*/
-        void TimerAdd(uint64_t id, uint32_t delay, const tastfunc_t& cb);
+        // 定时器中有个_timers成员，定时器信息的操作有可能在多线程中进行，因此需要考虑线程安全问题
+        // 如果不想加锁，那就把对定期的所有操作，都放到一个线程中进行
+        void TimerAdd(uint64_t id, uint32_t delay, const tastfunc_t& cb)
+        {
+            TimerAddInLoop(id,delay,cb);
+        }
 
         // 刷新/延迟定时任务
-        void TimerRefresh(uint64_t id);
-        void TimerCancel(uint64_t id);
+        void TimerRefresh(uint64_t id)
+        {
+            TimerRefreshInLoop(id);
+        }
 
-        /* 这个接口存在线程安全问题--这个接口实际上不能被外界使用者调用，只能在模块内，在对应的EventLoop线程内执行*/
-        bool HasTimer(uint64_t id) 
+        void TimerCancel(uint64_t id)
+        {
+            TimerCannelInLoop(id);
+        }
+
+        // 这个接口存在线程安全问题--这个接口实际上不能被外界使用者调用，只能在模块内，在对应的EventLoop线程内执行
+        bool IsTimerExist(uint64_t id) 
         {
             auto it = _timers.find(id);
             if (it == _timers.end()) 
@@ -102,6 +118,7 @@ namespace server_timerwheel
             int timerfd = timerfd_create(CLOCK_MONOTONIC, 0);
             if(timerfd < 0)
             {
+                LOG_FATAL_STREAM(GetLogger("ServerLogger")) << "Create timerfd failed!";
                 abort();
             }
 
@@ -121,6 +138,7 @@ namespace server_timerwheel
             int ret = read(_timerfd,&times,8);
             if(ret<0)
             {
+                LOG_FATAL_STREAM(GetLogger("ServerLogger")) << "Read timefd failed!";
                 abort();
             }
 

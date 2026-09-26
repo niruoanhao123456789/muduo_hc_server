@@ -8,11 +8,10 @@ namespace server_eventloop { class EventLoop; }
 
 namespace server_channel
 {
-    using EventLoop = server_eventloop::EventLoop;
-    using EventCallBack = std::function<void()>;
-
     class Channel
     {
+        using EventLoop = server_eventloop::EventLoop;
+        using EventCallBack = std::function<void()>;
     public:
         Channel(EventLoop* loop, int fd)
         :_fd(fd)
@@ -48,41 +47,46 @@ namespace server_channel
         void EnableRead()
         {
             _events |= EPOLLIN;
-            // 
+            Update();
         }
 
         // 启动写事件监控
         void EnableWrite()
         {
             _events |= EPOLLOUT;
-            //
+            Update();
         }
 
         // 关闭读事件监控
         void DisableRead()
         {
             _events &= ~EPOLLIN;
-            //
+            Update();
         }
 
         // 关闭写事件监控
         void DisableWrite()
         {
             _events &= ~EPOLLOUT;
-            //
+            Update();
         }
 
         // 关闭所有事件监控
         void DisableAll()
         {
             _events = 0;
+            Update();
         }
 
         // 移除监控
         void Remove();
+
         void Update();
 
-        void SetREvents(uint32_t events) { _tri_events = events; }
+        void SetREvents(uint32_t events) 
+        { 
+            _tri_events = events;
+        }
         
         void SetReadCallBack(const EventCallBack& cb)
         {

@@ -10,7 +10,7 @@ namespace server_buffer
 {
     using namespace LogModule;
 
-    #define DEFAULT_SERVER_BUFFER_SIZE (2 * 1024)
+    #define DEFAULT_SERVER_BUFFER_SIZE   (2 * 1024)
     #define THRESHOLD_SERVER_BUFFER_SIZE (10 * 1024)
     #define INCREMENT_SERVER_BUFFER_SIZE (1024)
 
@@ -218,7 +218,7 @@ namespace server_buffer
             }
             _rindex = 0;
             _windex = datelen;
-            LOGI_STREAM() <<"ServerBuffer resize: "<<newsize;
+            LOG_INFOR_STREAM(GetLogger("ServerLogger")) << "Buffer resize!";
         }
 
         void MoveRindex(size_t len)
