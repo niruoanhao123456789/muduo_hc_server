@@ -4,14 +4,21 @@
 #include <cstdint>
 #include <sys/epoll.h>
 
+namespace server_eventloop { class EventLoop; }
+
 namespace server_channel
 {
+    using EventLoop = server_eventloop::EventLoop;
     using EventCallBack = std::function<void()>;
 
     class Channel
     {
     public:
-        Channel()
+        Channel(EventLoop* loop, int fd)
+        :_fd(fd)
+        ,_loop(loop)
+        ,_events(0)
+        ,_tri_events(0)
         {}
 
         int Fd() 
@@ -73,6 +80,9 @@ namespace server_channel
 
         // 移除监控
         void Remove();
+        void Update();
+
+        void SetREvents(uint32_t events) { _tri_events = events; }
         
         void SetReadCallBack(const EventCallBack& cb)
         {
@@ -125,6 +135,7 @@ namespace server_channel
 
     private:
         int _fd;
+        EventLoop* _loop;
         uint32_t  _events;
         uint32_t  _tri_events;
         EventCallBack _read_callback;
