@@ -78,21 +78,12 @@ namespace server_timerwheel
 
         // 定时器中有个_timers成员，定时器信息的操作有可能在多线程中进行，因此需要考虑线程安全问题
         // 如果不想加锁，那就把对定期的所有操作，都放到一个线程中进行
-        void TimerAdd(uint64_t id, uint32_t delay, const tastfunc_t& cb)
-        {
-            TimerAddInLoop(id,delay,cb);
-        }
+        void TimerAdd(uint64_t id, uint32_t delay, const tastfunc_t& cb);
 
         // 刷新/延迟定时任务
-        void TimerRefresh(uint64_t id)
-        {
-            TimerRefreshInLoop(id);
-        }
+        void TimerRefresh(uint64_t id);
 
-        void TimerCancel(uint64_t id)
-        {
-            TimerCannelInLoop(id);
-        }
+        void TimerCancel(uint64_t id);
 
         // 这个接口存在线程安全问题--这个接口实际上不能被外界使用者调用，只能在模块内，在对应的EventLoop线程内执行
         bool IsTimerExist(uint64_t id) 
