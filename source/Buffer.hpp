@@ -160,6 +160,11 @@ namespace server_buffer
             return ReadAsString(off + 1);
         }
 
+        void MoveRindex(size_t len)
+        {
+            assert(len <= ReadableSize());
+            _rindex = (_rindex + len) % _buffer.size();
+        }
 
     private:
         // 返回 '\n' 距离可读起始位置的逻辑偏移，未找到返回 npos
@@ -219,12 +224,6 @@ namespace server_buffer
             _rindex = 0;
             _windex = datelen;
             LOG_INFOR_STREAM(GetLogger("ServerLogger")) << "Buffer resize!";
-        }
-
-        void MoveRindex(size_t len)
-        {
-            assert(len <= ReadableSize());
-            _rindex = (_rindex + len) % _buffer.size();
         }
 
         void MoveWindex(size_t len)

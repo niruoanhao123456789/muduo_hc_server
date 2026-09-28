@@ -194,16 +194,16 @@ namespace server_timerwheel
 {
     inline void TimerWheel::TimerAdd(uint64_t id, uint32_t delay, const tastfunc_t& cb)
     {
-        _loop->RunInLoop(std::bind(TimerWheel::TimerAddInLoop,this,id,delay,cb));
+        _loop->RunInLoop(std::bind(&TimerWheel::TimerAddInLoop,this,id,delay,cb));
     }
 
     inline void TimerWheel::TimerRefresh(uint64_t id)
     {
-        _loop->RunInLoop(std::bind(TimerWheel::TimerRefreshInLoop,this,id));
+        _loop->RunInLoop(std::bind(&TimerWheel::TimerRefreshInLoop,this,id));
     }
 
     inline void TimerWheel::TimerCancel(uint64_t id)
     {
-        _loop->RunInLoop(std::bind(TimerWheel::TimerCannelInLoop,this,id));
+        _loop->RunInLoop(std::bind(&TimerWheel::TimerCannelInLoop,this,id));
     }
 }
