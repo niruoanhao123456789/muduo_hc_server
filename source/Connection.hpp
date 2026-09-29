@@ -28,6 +28,16 @@ namespace server_connection
         :_content(other._content ? other._content->clone() : nullptr)
         {}
 
+        Any& operator=(const Any& other)
+        {
+            if(this != &other)
+            {
+                Any tmp(other);
+                tmp.swap(*this);
+            }
+            return *this;
+        }
+
         Any& swap(Any& other)
         {
             std::swap(_content,other._content);

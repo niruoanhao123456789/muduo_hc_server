@@ -67,3 +67,14 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# test executables
+/test/servertest
+/test/clienttest
+/test/eventlooptest
+/test/channeltest
+/test/pollertest
+/test/sockettest
+/test/acceptortest
+/test/connectiontest
+/test/anytest

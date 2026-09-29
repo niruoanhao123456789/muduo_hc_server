@@ -2,15 +2,15 @@ CXX      := g++
 CXXFLAGS := -std=c++20 -pthread
 DEPS     := $(wildcard ../source/*.hpp) $(wildcard ../log/*.hpp)
 
-all: servertest clienttest
+BINS := servertest clienttest eventlooptest channeltest pollertest \
+        sockettest acceptortest connectiontest anytest
 
-servertest: servertest.cpp $(DEPS)
-	$(CXX) $(CXXFLAGS) $< -o $@
+all: $(BINS)
 
-clienttest: clienttest.cpp $(DEPS)
+%: %.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 
 .PHONY: all clean
 clean:
-	rm -f servertest clienttest
+	rm -f $(BINS)

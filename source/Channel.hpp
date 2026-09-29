@@ -124,14 +124,20 @@ namespace server_channel
 
             // 对于存在释放链接的操作，每次只执行一个
             if(_tri_events & EPOLLOUT)
+            {
                 if(_write_callback)
                     _write_callback();
+            }
             else if(_tri_events & EPOLLERR)
+            {
                 if(_error_callback)
                     _error_callback();
+            }
             else if(_tri_events & EPOLLHUP)
+            {
                 if(_close_callback)
                     _close_callback();
+            }
 
             if(_event_callback)
                 _event_callback();

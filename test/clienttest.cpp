@@ -1,5 +1,7 @@
 #include "../source/Connection.hpp"
 #include <memory>
+#include <future>
+#include <unistd.h>
 
 using namespace server_connection;
 using namespace server_eventloop;
@@ -9,6 +11,10 @@ using namespace LogModule;
 
 int main()
 {
+    // 客户端同样使用 LoopThread，在独立线程中运行 EventLoop
+    LoopThread loop_thread;
+    EventLoop* loop = loop_thread.GetEventLoop();
+
     Socket client_socket;
     if(!client_socket.CreateClient(8080, "127.0.0.1"))
     {
@@ -16,8 +22,7 @@ int main()
         return -1;
     }
 
-    EventLoop loop;
-    PtrConnection conn = std::make_shared<Connection>(&loop, 1, client_socket.Fd());
+    PtrConnection conn = std::make_shared<Connection>(loop, 1, client_socket.Fd());
 
     conn->SetConnectedCallback([](const PtrConnection& conn){
         LOGD_STREAM() << "Client: connection established, id = " << conn->ConnId();
@@ -30,15 +35,18 @@ int main()
     conn->SetMessageCallback([](const PtrConnection& conn, ServerBuffer* buf){
         std::string msg = buf->ReadAsString(buf->ReadableSize());
         LOGD_STREAM() << "Client recv: " << msg;
-        ::exit(0);
+        conn->Shutdown();
     });
 
     conn->SetClosedCallback([](const PtrConnection& conn){
         LOGD_STREAM() << "Client: connection closed, id = " << conn->ConnId();
+        ::exit(0);
     });
 
     conn->Established();
-    loop.Start();
+
+    while (1)
+        pause();
 
     return 0;
 }

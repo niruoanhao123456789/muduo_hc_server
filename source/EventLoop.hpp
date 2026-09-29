@@ -174,6 +174,96 @@ namespace server_eventloop
         std::mutex _mutex; // 实现任务池操作的线程安全
         TimerWheel _timer_wheel;
     };
+
+    class LoopThread
+    {
+    public:
+        // 创建线程，设定线程入口函数
+        LoopThread()
+        :_loop(nullptr)
+        ,_thread(std::thread(&LoopThread::ThreadEntry,this))
+        {}
+
+        EventLoop* GetEventLoop()
+        {
+            EventLoop* loop = nullptr;
+
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+                _cond.wait(lock,[&](){
+                    return _loop != nullptr;
+                });
+                loop = _loop;
+            }
+            return loop;
+        }
+
+
+    private:
+        // 实例化 EventLoop 对象，唤醒_cond上有可能阻塞的线程，并且开始运行EventLoop模块的功能
+        void ThreadEntry()
+        {
+            EventLoop loop;
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+                _loop = &loop;
+                _cond.notify_all();
+            }
+            loop.Start();
+        }
+        
+
+    private:
+        std::mutex _mutex;
+        std::condition_variable _cond;
+        EventLoop* _loop;       // 该对象需在对应的线程内被实例化
+        std::thread _thread;
+    };
+
+    class LoopThreadPool
+    {
+    public:
+        LoopThreadPool(EventLoop* baseloop)
+        :_thread_count(0)
+        ,_next_index(0)
+        ,_baseloop(baseloop)
+        {}
+
+        void SetThreadCount(int count)
+        {
+            _thread_count = count;
+        }
+
+        void Create()
+        {
+            if(_thread_count > 0)
+            {
+                _threads.resize(_thread_count);
+                _loops.resize(_thread_count);
+                for(int i=0;i<_thread_count;i++)
+                {
+                    _threads[i] = new LoopThread();
+                    _loops[i] = _threads[i]->GetEventLoop();
+                }
+            }
+        }
+
+        EventLoop* NextLoop()
+        {
+            if(!_thread_count)
+                return _baseloop;
+            
+            _next_index = (_next_index + 1) % _thread_count;
+            return _loops[_next_index];
+        }
+
+    private:
+        int _thread_count;
+        int _next_index;
+        EventLoop* _baseloop;
+        std::vector<LoopThread*> _threads;
+        std::vector<EventLoop*>  _loops;
+    };
 }
 
 namespace server_channel
