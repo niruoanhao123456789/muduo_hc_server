@@ -26,6 +26,11 @@ namespace server_acceptor
         {
             _accept_cb = cb;
         }
+
+        void Listen()
+        {
+            _channel.EnableRead();
+        }
         
     private:
         void HandleRead()
