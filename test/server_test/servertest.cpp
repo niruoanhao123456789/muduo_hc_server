@@ -1,5 +1,4 @@
-#include "../source/Server.hpp"
-#include "../source/Connection.hpp"
+#include "../../source/Server.hpp"
 #include <memory>
 #include <future>
 #include <unordered_map>

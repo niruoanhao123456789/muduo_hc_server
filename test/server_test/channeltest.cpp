@@ -1,4 +1,4 @@
-#include "../source/EventLoop.hpp"
+#include "../../source/Server.hpp"
 #include <atomic>
 #include <chrono>
 #include <thread>

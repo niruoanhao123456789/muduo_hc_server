@@ -9,7 +9,7 @@
 #include <random>
 #include <algorithm>
 #include <cstdint>
-#include "../source/Buffer.hpp"
+#include "../../source/Server.hpp"
 
 using namespace server_buffer;
 

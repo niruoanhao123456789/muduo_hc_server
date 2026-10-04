@@ -1,4 +1,4 @@
-#include "../source/Connection.hpp"
+#include "../../source/Server.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>

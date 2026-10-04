@@ -1,4 +1,4 @@
-#include "../source/TcpServer.hpp"
+#include "../../source/Server.hpp"
 #include <atomic>
 #include <future>
 #include <string>
