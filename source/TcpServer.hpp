@@ -93,6 +93,8 @@ namespace server_tcp
                 conn->EnableInactiveRelease(_timeout); //启动非活跃超时销毁
             
             _conns.insert(std::make_pair(_next_id,conn));
+
+            conn->Established();
         }
 
         void RemoveConnectionInLoop(const PtrConnection &conn)

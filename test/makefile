@@ -3,7 +3,7 @@ CXXFLAGS := -std=c++20 -pthread
 DEPS     := $(wildcard ../source/*.hpp) $(wildcard ../log/*.hpp)
 
 BINS := servertest clienttest eventlooptest channeltest pollertest \
-        sockettest acceptortest connectiontest anytest
+        sockettest acceptortest connectiontest anytest tcpservertest
 
 all: $(BINS)
 
