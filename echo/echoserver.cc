@@ -16,4 +16,6 @@ int main(int argc,char* argv[])
     uint16_t port = std::stoi(argv[1]);
     std::shared_ptr<EchoServer> server = std::make_shared<EchoServer>(port);
     server->Start();
+
+    return 0;
 }
