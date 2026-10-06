@@ -200,7 +200,7 @@ namespace http_util
         // 不编码的特殊字符： RFC3986文档规定 . - _ ~ 字母，数字属于绝对不编码字符
         // RFC3986文档规定，编码格式 %HH 
         // W3C标准中规定，查询字符串中的空格，需要编码为+， 解码则是+转空格
-        static std::string UrlEncode(std::string& url,bool convert_space_to_plus = true)
+        static std::string UrlEncode(const std::string& url,bool convert_space_to_plus = true)
         {
             std::string ret;
             for(auto& ch:url)
