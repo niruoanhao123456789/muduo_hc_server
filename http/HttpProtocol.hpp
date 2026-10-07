@@ -14,8 +14,7 @@ namespace http_prtocol
     const std::string suffixsep = ".";
     const std::string argsep = "?";
     const std::string gdefault_version = "HTTP/1.1";
-    const std::string webroot = "wwwroot";
-    const std::string homepage = "index.html";
+    
 
     class HttpRequest
     {
@@ -124,8 +123,6 @@ namespace http_prtocol
         std::string _http_version;       // 协议版本
         std::string _body;               // 请求正文
         std::smatch _matches;            // 资源路径正则匹配的数据
-    
-    private:
         std::unordered_map<std::string, std::string> _headerkv;     // 头部字段
         std::unordered_map<std::string, std::string> _paramkv;       // 查询字符串
     };

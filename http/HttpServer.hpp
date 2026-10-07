@@ -6,6 +6,10 @@ namespace http_server
     using namespace http_prtocol;
 
     #define DEFALT_TIMEOUT 10
+
+    const std::string webroot = "wwwroot";
+    const std::string homepage = "index.html";
+
     class HttpServer
     {
         using Handler = std::function<void(const HttpRequest&, const HttpResponse*)>;
@@ -17,7 +21,7 @@ namespace http_server
             _server.EnableInactiveRelease(timeout);
             _server.SetConnectedCallBack(std::bind(&HttpServer::OnConnected,this,std::placeholders::_1));
             _server.SetMessageCallBack(std::bind(&HttpServer::OnMessage,this,std::placeholders::_1,std::placeholders::_2));
-
+            SetBaseDir("./" + webroot + "/");
         }
 
         void SetBaseDir(const std::string& path)
