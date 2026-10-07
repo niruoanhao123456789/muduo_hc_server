@@ -43,6 +43,11 @@ namespace http_prtocol
             _headerkv.insert({key,val});
         }
 
+        void HeaderInsert(const std::pair<const std::string&,const std::string&>& kv)
+        {
+            _headerkv.insert(kv);
+        }
+
         // 判断头部字段是否存在
         bool IsHeaderExist(const std::string& key)  const
         {
@@ -67,6 +72,11 @@ namespace http_prtocol
         void ParamInsert(const std::string& key,const std::string& val)
         {
             _paramkv.insert({key,val});
+        }
+
+        void ParamInsert(const std::pair<const std::string&,const std::string&>& kv)
+        {
+            _paramkv.insert(kv);
         }
 
         // 判断指定查询字符串是否存在
@@ -110,10 +120,12 @@ namespace http_prtocol
 
     public:
         std::string _method;             // 请求方法
-        std::string _path;                // 资源路径
+        std::string _path;               // 资源路径
         std::string _http_version;       // 协议版本
         std::string _body;               // 请求正文
         std::smatch _matches;            // 资源路径正则匹配的数据
+    
+    private:
         std::unordered_map<std::string, std::string> _headerkv;     // 头部字段
         std::unordered_map<std::string, std::string> _paramkv;       // 查询字符串
     };
@@ -144,6 +156,11 @@ namespace http_prtocol
         void HeaderInsert(const std::string& key, const std::string& val)
         {
             _headerkv.insert({key,val});
+        }
+
+        void HeaderInsert(const std::pair<const std::string&,const std::string&>& kv)
+        {
+            _headerkv.insert(kv);
         }
 
         // 判断头部字段是否存在
@@ -188,8 +205,8 @@ namespace http_prtocol
                 return true;
         }
 
-    private:
-        int _statu;
+    public:
+        int _statu;  
         bool _redirect_flag;
         std::string _body;
         std::string _redirect_url;
