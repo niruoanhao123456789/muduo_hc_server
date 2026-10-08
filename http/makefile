@@ -1,6 +1,6 @@
-server : main.cc $(wildcard *.hpp)
+server : main.cc $(wildcard *.hpp) $(wildcard ../source/*.hpp) $(wildcard ../log/*.hpp)
 	g++ -std=c++20 $< -o $@
 
-.PHONY:
+.PHONY: clean
 clean:
 	rm -f server

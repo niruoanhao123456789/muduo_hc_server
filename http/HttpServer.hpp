@@ -64,6 +64,7 @@ namespace http_server
     private:
         void ErrorHandler(const HttpRequest& req, HttpResponse* resp)
         {
+            assert(resp);
             // 组织一个错误展示页面
             std::string body;
             body += "<html>";
@@ -144,6 +145,7 @@ namespace http_server
         // 静态资源的请求处理 --- 将静态资源文件的数据读取出来，放到rsp的_body中, 并设置mime
         void FileHandler(const HttpRequest& req, HttpResponse* resp)
         {
+            assert(resp);
             std::string req_path = _basedir + req._path;
             if(req._path.back() == '/')
                 req_path += "index.html";
@@ -156,6 +158,7 @@ namespace http_server
         // 功能性请求的分类处理
         void Dispatcher(HttpRequest& req,HttpResponse* resp,Handlers& handlers)
         {
+            assert(resp);
             // 在对应请求方法的路由表中，查找是否含有对应资源请求的处理函数，有则调用，没有则发挥404
             // 思想：路由表存储的时键值对 -- 正则表达式 & 处理函数
             // 使用正则表达式，对请求的资源路径进行正则匹配，匹配成功就使用对应函数进行处理
@@ -181,6 +184,7 @@ namespace http_server
         */
         void Route(HttpRequest& req, HttpResponse* resp)
         {
+            assert(resp);
             if(IsFileHandler(req))
                 FileHandler(req,resp);
             else if(req._method == "GET" || req._method == "HEAD")
@@ -206,6 +210,7 @@ namespace http_server
         // 缓冲区数据解析+处理
         void OnMessage(const PtrConnection& conn, ServerBuffer* buf)
         {
+            assert(buf);
             while(buf->ReadableSize()>0)
             {
                 // 获取上下文
@@ -227,7 +232,7 @@ namespace http_server
                     WriteResponse(conn,req,resp); 
                     context->Reset();
                     // 出错了就把缓冲区数据清空
-                    buf->MoveRindex(buf->ReadableSize());
+                    buf->Reset();
                     conn->Shutdown();
                 }
 

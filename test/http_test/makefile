@@ -1,6 +1,9 @@
-test : utiltest.cc
+test : httpclienttest.cc
 	g++ -std=c++20 $^ -o $@
 
-.PHONY:
+perf : httpperftest.cc
+	g++ -std=c++20 -O2 -pthread $^ -o $@
+
+.PHONY: clean
 clean:
-	rm -f test
+	rm -f test perf

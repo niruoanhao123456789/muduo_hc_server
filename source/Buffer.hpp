@@ -47,6 +47,20 @@ namespace server_buffer
                 return (_buffer.size() - _rindex) + _windex; 
         }
 
+        // 返回从ReadPosition开始、到缓冲区物理末尾为止的连续可读长度
+        // 用于构建发送用的iovec：第一段为 [ReadPosition, ReadPosition+该长度)
+        // 当数据回绕时该长度小于ReadableSize()，剩余部分位于 [Begin, 头部)，作为第二段
+        size_t ReadableSizeContiguous()
+        {
+            size_t readablelen = ReadableSize();
+            if(!readablelen)
+                return 0;
+            if(_windex >= _rindex)
+                return readablelen;
+            size_t suflen = _buffer.size() - _rindex;
+            return suflen < readablelen ? suflen : readablelen;
+        }
+
         size_t WriteableSize()
         {
             // 保留一个空槽用于区分满/空，实际可写容量为 Size()-1-ReadableSize()

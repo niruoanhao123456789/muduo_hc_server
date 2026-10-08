@@ -437,15 +437,14 @@ namespace http_prtocol
             // 缓冲区中数据，包含了当前请求的所有正文，则取出所需的数据
             if(buf->ReadableSize() >= left_len)
             {
-                _req._body.append(buf->ReadPosition(),left_len);
-                buf->MoveRindex(left_len);
+                // 通过ReadAsString读取，内部已处理缓冲区回绕，避免越过物理末尾读越界
+                _req._body += buf->ReadAsString(left_len);
                 _recv_statu = HttpRecvStatu::RECV_HTTP_OVER;
             }
             else
             {
                 // 缓冲区中数据，无法满足当前正文的需要，数据不足，取出数据，然后等待新数据到来
-                _req._body.append(buf->ReadPosition(),buf->ReadableSize());
-                buf->MoveRindex(buf->ReadableSize());
+                _req._body += buf->ReadAsString(buf->ReadableSize());
             }
 
         }

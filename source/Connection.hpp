@@ -158,8 +158,9 @@ namespace server_connection
         }
 
         // 发送数据，将数据放到发送缓冲区，启动写事件监控
-        void Send(const char *data, size_t len)
+        void Send(const char* data, size_t len)
         {
+            assert(data);
             ServerBuffer buf;
             buf.Write(data,len);
             _loop->RunInLoop(std::bind(&Connection::SendInLoop,this,std::move(buf)));
@@ -199,7 +200,7 @@ namespace server_connection
 
         ~Connection()
         {
-            LOGD("Release connection: %p",this);
+            LOG_INFOR_STREAM(GetLogger("ServerLogger")) << "Release connection: " << this;
         }
 
     private:
@@ -235,7 +236,28 @@ namespace server_connection
 
         void HandleWrite()
         {
-            ssize_t n = _socket.NonBlockSend(_out_buf.ReadPosition(),_out_buf.ReadableSize());
+            // 环形缓冲区回绕时，可读数据分为 [ReadPosition, 物理末尾) 与 [Begin, 头部) 两段
+            // 用iovec一次sendmsg把两段聚集发出：只一次系统调用、无需拷贝，也不会越过物理末尾读越界
+            // 未回绕时只有一段（iovcnt=1）；部分写时按实际发送字节推进读索引，剩余部分下次继续
+            struct iovec iov[2];
+            int iovcnt = 0;
+
+            size_t tail_len = _out_buf.ReadableSizeContiguous();
+            if(tail_len)
+            {
+                iov[iovcnt].iov_base = _out_buf.ReadPosition();
+                iov[iovcnt].iov_len  = tail_len;
+                ++iovcnt;
+            }
+            size_t head_len = _out_buf.ReadableSize() - tail_len;
+            if(head_len)
+            {
+                iov[iovcnt].iov_base = _out_buf.Begin();
+                iov[iovcnt].iov_len  = head_len;
+                ++iovcnt;
+            }
+
+            ssize_t n = _socket.NonBlockSendV(iov,iovcnt);
             if(n < 0)
             {
                 // 如果是发送错误就该关闭连接             
@@ -308,10 +330,9 @@ namespace server_connection
             if(_enable_inactive_release)
                 _loop->TimerRefresh(_conn_id);
 
+            // _event_cb 是可选回调，未设置时不应当每个事件都告警刷屏
             if(_event_cb)
                 _event_cb(shared_from_this());
-            else
-                LOG_WARNNING_STREAM(GetLogger("ServerLogger")) << "_event_cb is nullptr!";
         }
 
         // 连接获取之后，所处的状态下要进行各种设置（启动读监控,调用回调函数）

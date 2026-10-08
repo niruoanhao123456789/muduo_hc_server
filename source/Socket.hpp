@@ -3,7 +3,9 @@
 #include <string>
 #include <cstring>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -96,6 +98,9 @@ namespace server_socket
                 LOG_ERROR_STREAM(GetLogger("ServerLogger")) << "Socket accept failed!";
                 return -1;
             }
+            // 关闭Nagle算法，避免与对端延迟ACK叠加产生约40ms的延迟毛刺
+            int val = 1;
+            setsockopt(newfd,IPPROTO_TCP,TCP_NODELAY,(void*)&val,sizeof(int));
             return newfd;
         }
 
@@ -142,6 +147,29 @@ namespace server_socket
             return Send(buf,len,MSG_DONTWAIT); // MSG_DONTWAIT 表示当前接收为非阻塞。
         }
 
+        // 按iovec数组聚集发送（scatter-gather）
+        // 用于环形缓冲区回绕时把 [尾部段, 头部段] 两段连续内存在一次系统调用中发出
+        // 返回值语义与Send一致：实际发送字节数，出错-1，EAGAIN/EINTR返回0
+        ssize_t NonBlockSendV(const struct iovec* iov, int iovcnt)
+        {
+            if(iovcnt <= 0 || iov == nullptr) return 0;
+
+            struct msghdr msg;
+            memset(&msg,0,sizeof(msg));
+            msg.msg_iov = const_cast<struct iovec*>(iov);
+            msg.msg_iovlen = iovcnt;
+
+            ssize_t ret = sendmsg(_socketfd,&msg,MSG_DONTWAIT);
+            if(ret < 0)
+            {
+                if(errno == EAGAIN || errno == EINTR)
+                    return 0;
+                LOG_ERROR_STREAM(GetLogger("ServerLogger")) << "Socket sendmsg failed!";
+                return -1;
+            }
+            return ret; // 实际发送的数据长度
+        }
+
         // 关闭套接字
         void Close()
         {
@@ -170,15 +198,23 @@ namespace server_socket
             setsockopt(_socketfd,SOL_SOCKET,SO_REUSEADDR,(void*)&val,sizeof(int));
         }
 
+        // 关闭Nagle算法，降低小包发送延迟
+        void SetNoDelay()
+        {
+            int val = 1;
+            setsockopt(_socketfd,IPPROTO_TCP,TCP_NODELAY,(void*)&val,sizeof(int));
+        }
+
         // 创建一个服务端连接
         bool CreateServer(uint16_t port, const std::string& ip = "0.0.0.0", bool block_flag = false)
         {
-            // 1. 创建套接字，2. 绑定地址，3. 开始监听，4. 设置非阻塞， 5. 启动地址重用
-            if(!Create())       return false;
-            if(block_flag)      NonBlock();
-            if(!Bind(ip,port))  return false;
-            if(!Listen())       return false;
+            // 1. 创建套接字，2. 启动地址重用，3. 绑定地址，4. 开始监听，5. 设置非阻塞
+            // 注意：SO_REUSEADDR 必须在 bind 之前设置，否则无法重用 TIME_WAIT 状态的端口
+            if(!Create())           return false;
             ReuseAddress();
+            if(block_flag)          NonBlock();
+            if(!Bind(ip,port))      return false;
+            if(!Listen())           return false;
             return true;
         }
 
@@ -188,6 +224,7 @@ namespace server_socket
             // 1. 创建套接字，2.指向连接服务器
             if(!Create())           return false;
             if(!Connect(ip,port))   return false;
+            SetNoDelay();
             return true;
         }
 
