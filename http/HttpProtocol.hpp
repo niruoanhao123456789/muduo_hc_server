@@ -310,7 +310,7 @@ namespace http_prtocol
             {
                 _recv_statu = HttpRecvStatu::RECV_HTTP_ERROR;
                 _resp_statu = 400; // BAD REQUEST
-                return;
+                return false;
             }
             // 0 : GET /bitejiuyeke/login?user=xiaoming&pass=123123 HTTP/1.1
             // 1 : GET
@@ -319,29 +319,33 @@ namespace http_prtocol
             // 4 : HTTP/1.1
             // 请求方法的获取
             _req._method = matches[1];
-            std::transform(_req._method.begin(),_req._method.end(),_req._method,::toupper);
+            std::transform(_req._method.begin(),_req._method.end(),_req._method.begin(),::toupper);
             // 资源路径的获取，需要进行URL解码操作，但是不需要+转空格
             _req._path = http_util::Util::UrlDecode(matches[2], false);
 
             _req._http_version = matches[4];
 
-            std::vector<std::string> query_strings;
+            
             std::string query_string = matches[3];
-            // 先以 & 符号进行分割，得到各个字串
-            http_util::Util::SplitString(query_string,&query_strings,"&");
-            // 针对各个字串，以 = 符号进行分割，得到key 和val， 得到之后也需要进行URL解码
-            for(auto& str : query_strings)
+            if(matches[3].matched && !query_string.empty())
             {
-                size_t pos = str.find("=");
-                if(pos==std::string::npos)
+                std::vector<std::string> query_strings;
+                // 先以 & 符号进行分割，得到各个字串
+                http_util::Util::SplitString(query_string,&query_strings,"&");
+                // 针对各个字串，以 = 符号进行分割，得到key 和val， 得到之后也需要进行URL解码
+                for(auto& str : query_strings)
                 {
-                    _recv_statu = HttpRecvStatu::RECV_HTTP_ERROR;
-                    _resp_statu = 400;
-                    return false;
+                    size_t pos = str.find("=");
+                    if(pos==std::string::npos)
+                    {
+                        _recv_statu = HttpRecvStatu::RECV_HTTP_ERROR;
+                        _resp_statu = 400;
+                        return false;
+                    }
+                    std::string key = Util::UrlDecode(str.substr(0,pos));
+                    std::string val = Util::UrlDecode(str.substr(pos+1));
+                    _req.ParamInsert(key,val);
                 }
-                std::string key = Util::UrlDecode(str.substr(0,pos));
-                std::string val = Util::UrlDecode(str.substr(pos+1));
-                _req.ParamInsert(key,val);
             }
             
             return true;

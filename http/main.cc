@@ -12,14 +12,14 @@ void LoggerInit()
     {
         std::unique_ptr<LoggerBuilder> lbd = std::make_unique<GobalLoggerBuilder>();
         lbd->BuildLoggerName("HttpLogger");
-        lbd->BUildLoggerSink<RollByTimeSink>("./logs",TimeGap::GAP_DAY);
+        lbd->BUildLoggerSink<RollByTimeSink>("./logs/",TimeGap::GAP_DAY);
         lbd->Build();
     }
 
     {
         std::unique_ptr<LoggerBuilder> lbd = std::make_unique<GobalLoggerBuilder>();
         lbd->BuildLoggerName("ServerLogger");
-        lbd->BUildLoggerSink<RollByTimeSink>("./logs",TimeGap::GAP_DAY);
+        lbd->BUildLoggerSink<RollByTimeSink>("./logs/",TimeGap::GAP_DAY);
         lbd->Build();
     }
 }
@@ -41,10 +41,26 @@ std::string RequestStr(const HttpRequest& req)
     return ss.str();
 }
 
-void Message(const HttpRequest& req, HttpResponse* resp)
+void Hello(const HttpRequest& req, HttpResponse* resp)
 {
     resp->SetContent(RequestStr(req),"text/plain");
 }
+
+void Login(const HttpRequest& req, HttpResponse* resp)
+{
+    resp->SetContent(RequestStr(req),"text/plain");
+}
+
+void PutFile(const HttpRequest& req, HttpResponse* resp)
+{
+    resp->SetContent(RequestStr(req),"text/plain");
+}
+
+void DelFile(const HttpRequest& req, HttpResponse* resp)
+{
+    resp->SetContent(RequestStr(req),"text/plain");
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -60,6 +76,11 @@ int main(int argc, char* argv[])
 
     HttpServer server(port,10);
     server.SetThreadCount(3);
+    server.Get("/hello",Hello);
+    server.Post("/login",Login);
+    server.Put("/123.txt",PutFile);
+    server.Delete("/123.txt",DelFile);
+
     server.ListenAndStart();
 
 }

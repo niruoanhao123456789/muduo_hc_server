@@ -12,7 +12,7 @@ namespace http_server
 
     class HttpServer
     {
-        using Handler = std::function<void(const HttpRequest&, const HttpResponse*)>;
+        using Handler = std::function<void(const HttpRequest&, HttpResponse*)>;
         using Handlers = std::vector<std::pair<std::regex,Handler>>;
     public:
         HttpServer(int port = 8080,int timeout = DEFALT_TIMEOUT)
@@ -108,7 +108,7 @@ namespace http_server
                 resp_str << head.first << ": " << head.second << linesep;
             }      
             resp_str << linesep;
-
+            resp_str << resp._body;
             // 发送数据
             conn->Send(resp_str.str().c_str(),resp_str.str().size());
         }
@@ -200,7 +200,7 @@ namespace http_server
         void OnConnected(const PtrConnection& conn)
         {
             conn->SetContext(HttpContext());
-            LOG_DEBUG_STREAM(GetLogger("HttpLogger")) << "New Connection: " << conn.get();
+            LOG_INFOR_STREAM(GetLogger("HttpLogger")) << "New Connection: " << conn.get();
         }
 
         // 缓冲区数据解析+处理

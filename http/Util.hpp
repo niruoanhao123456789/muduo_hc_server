@@ -297,7 +297,7 @@ namespace http_util
         static bool IsDirectoryExists(const std::string& filename)
         {
             struct stat st;
-            if(stat(filename.c_str(),&st) <= 0)
+            if(stat(filename.c_str(),&st) < 0)
                 return false;
             
             return S_ISDIR(st.st_mode);
@@ -307,7 +307,7 @@ namespace http_util
         static bool IsFileExists(const std::string& filename)
         {
             struct stat st;
-            if(stat(filename.c_str(),&st) <= 0)
+            if(stat(filename.c_str(),&st) < 0)
                 return false;
             
             return S_ISREG(st.st_mode);
